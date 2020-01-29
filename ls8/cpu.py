@@ -10,7 +10,7 @@ class CPU:
         self.ram = [0] * 256
         self.register = [0] * 8
         self.pc = 0
-        self.rc = 0
+        self.sp = 256
 
     def load(self, program_file):
         """Load a program into memory."""
@@ -66,7 +66,7 @@ class CPU:
         while running:
             #LDI
             if self.ram[self.pc] == '10000010':
-                self.register[int(str(self.ram[self.pc + 1]), 2)] = self.ram[self.pc + 2]
+                self.register[int(self.ram[self.pc + 1], 2)] = self.ram[self.pc + 2]
                 self.pc += 3
 
             #PRN
@@ -76,16 +76,32 @@ class CPU:
 
             #MUL
             elif self.ram[self.pc] == '10100010':
-                a = self.register[int(str(self.ram[self.pc + 1]), 2)]
-                b = self.register[int(str(self.ram[self.pc + 2]), 2)]
+                a = self.register[int(self.ram[self.pc + 1], 2)]
+                b = self.register[int(self.ram[self.pc + 2], 2)]
                 a = int(str(a), 2)
                 b = int(str(b), 2)
                 print(a*b)
                 self.pc += 3
 
+            #PUSH
+            elif self.ram[self.pc] == '01000101':
+                self.sp -= 1
+                self.ram[self.sp] = self.register[int(self.ram[self.pc + 1], 2)]
+                self.pc += 2
+
+            #POP
+            elif self.ram[self.pc] == '01000110':
+                self.register[int(self.ram[self.pc + 1], 2)] = self.ram[self.sp]
+                self.sp += 1
+                self.pc += 2
+
             #HLT
             elif self.ram[self.pc] == '00000001':
                 self.pc = 0
+                running = False
+
+            else:
+                print(f'{self.ram[self.pc]} is unknown, stopping cpu')
                 running = False
 
 
