@@ -11,6 +11,7 @@ class CPU:
         self.register = [0] * 8
         self.pc = 0
         self.sp = 256
+        self.flag = '00000000'
 
     def load(self, program_file):
         """Load a program into memory."""
@@ -63,10 +64,6 @@ class CPU:
     def run(self):
         """Run the CPU."""
         running = True
-    # 20
-    # 30
-    # 36
-    # 60
         while running:
             #LDI
             if self.ram[self.pc] == '10000010':
@@ -119,6 +116,35 @@ class CPU:
                 self.pc = self.ram[self.sp]
                 self.sp += 1
 
+            #CMP
+            elif self.ram[self.pc] == '10100111':
+                reg_a = int(self.register[int(self.ram[self.pc + 1], 2)], 2)
+                reg_b = int(self.register[int(self.ram[self.pc + 2], 2)], 2)
+                if reg_a == reg_b:
+                    self.flag = '00000001'
+                elif reg_a > reg_b:
+                    self.flag = '00000010'
+                elif reg_a < reg_b:
+                    self.flag = '00000100'
+                self.pc += 3
+
+            #JMP
+            elif self.ram[self.pc] == '01010100':
+                self.pc = int(self.register[int(self.ram[self.pc + 1], 2)], 2)
+
+            #JEQ
+            elif self.ram[self.pc] == '01010101':
+                if self.flag == '00000001':
+                    self.pc = int(self.register[int(self.ram[self.pc + 1], 2)], 2)
+                else:
+                    self.pc += 2
+
+            #JNE
+            elif self.ram[self.pc] == '01010110':
+                if self.flag != '00000001':
+                    self.pc = int(self.register[int(self.ram[self.pc + 1], 2)], 2)
+                else:
+                    self.pc += 2
 
             #HLT
             elif self.ram[self.pc] == '00000001':
